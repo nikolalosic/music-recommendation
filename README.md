@@ -32,4 +32,4 @@ Evaluacija tačnosti preporuke  ispitivaće se korišćenjem sledećih metrika:
 
 @vdragan1993 Dragan Vidaković
 
-[Git Repository](url)
+[Git Repository](https://github.com/nikolalosic/music-recommendation)
