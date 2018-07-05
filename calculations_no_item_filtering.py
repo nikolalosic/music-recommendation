@@ -1,7 +1,9 @@
-# -*- coding: utf-8 -*-
 import kaggle
 import numpy
 from datetime import datetime
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
 
 
 def inCommonFormula(val1, val2):
@@ -107,7 +109,10 @@ def calcSimsAndRecommend(testListeners, listenersTotalPlays, listenersSongs, pru
         # recommend, and prune
         numRecsRequired = len(listenersSongs[listenerA])
 
-        maxSim = max(listenerSimilarities.values())
+        if len(listenerSimilarities) > 0:
+            maxSim = max(listenerSimilarities.values())
+        else:
+            maxSim = 0
 
         recs = {}  # for this test listener's recommendations. key = songID, value = recommendation value
 
@@ -132,7 +137,7 @@ def calcMeanAveragePrecision(testListenersRecommendations, validListenersSongsLi
     recommendations = []  # list of lists of recommendations
     answers = []  # lists of lists of actual songs user listened to
 
-    print("-----TESTS----")
+    # print("-----TESTS----")
     #print(testListenersRecommendations)
     #print(validListenersSongsLists)
 
@@ -158,3 +163,15 @@ def calcNdcg(testListenersRecommendations, validListenersSongsLists):
     #return kaggle.ndcg_at_k(answers, recommendations, 10)
 
 
+def calcRmse(testListenersRecommendations, validListenersSongsLists):
+    recommendations = []  # list of lists of recommendations
+    answers = []  # lists of lists of actual songs user listened to
+
+    for listener, thisValidListenersSongs in validListenersSongsLists.items():
+        # print(listener, thisValidListenersSongs)
+        if listener in testListenersRecommendations:
+            answers.append(len(thisValidListenersSongs))  # add what actually listened to (answers) to answers list
+            guessed = len({*testListenersRecommendations[listener]} - {*thisValidListenersSongs})
+            recommendations.append((guessed)/len(thisValidListenersSongs))
+            # print("yes: ", testListenersRecommendations[listener])
+    return sqrt(mean_squared_error(answers, recommendations))

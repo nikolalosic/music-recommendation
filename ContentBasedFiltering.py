@@ -1,56 +1,59 @@
 # for every user and his list of songs apply content based filtering
-def contentBasedFiltering(songsListeners, listenersSongs, listenersRecs, similars, trackToSong, songToTrack):
-    # firstTen(similars)
+def contentBasedFiltering(songsListeners, listenersSongs, listenersRecs, similars, trackToSong, songToTrack, listenersAnswersLists):
+    # firstTenMap(similars)
     # firstTen(trackToSong)
-    # print(len(songsListeners))
-    # key is userId, value is list of songs predicted for that user
-    for key, value in listenersRecs.items():
-        # print("lengths before: ", len(value))
-        listLen = len(value)
-        filter(value, listenersSongs[key], similars, trackToSong, songToTrack, len(songsListeners))
-        # print("lengths after: ", len(value))
-        del value[listLen:]
+
+    lr2 = {}
+    for user in listenersAnswersLists:
+        nl = {}
+        for song in listenersRecs[user]:
+            if song in similars:
+                mn = 0
+                for s in similars[song]:
+                    nl[s] = similars[song][s]
+                    mn += similars[song][s]
+                nl[song] = mn/len(similars[song])
+            else:
+                nl[song] = 5
+        lr2[user] = list(map(lambda x: x[0], sorted(nl.items(), key=lambda kv: kv[1], reverse=True)))
 
 
-    return listenersRecs
+        # for key, value in listenersRecs.items():
+            # print("lengths before: ", len(value))
+            # listLen = len(value)
+            # filter(value, listenersSongs[key], similars, trackToSong, songToTrack, len(songsListeners))
+            # print("lengths after: ", len(value))
+            # del value[listLen:]
 
+        # del listenersRecs[user][:]
+        # for key, value in sorted(lr.items(), key=lambda k: (k[1], k[0]), reverse=True):
+        #     listenersRecs[user].append(key)
 
-# create new list of songs with userProfile (sorted songs that user likes) and return all
-# that he didn't listen and are similar or are in userProfile
-def filter(userProfile, listenersSongs, similars, trackToSong, songToTrack, totalSongsLenn):
-    # map that contains recomended songs for user as key with score as value
-    filterSongs = {}
+    # firstTenMap(listenersRecs)
+    # return listenersRecs
+    return lr2
 
-    totalSongsLen = 600000
+def bla(dataset_and_testset, finalset, song_reco):
+    # za dati element iz finalset odradi predikciju
+    tslid = dataset_and_testset.groupby('listener_id', as_index=True).agg(lambda x: x.tolist())
+    testListeners = tslid.to_dict()['song_id']
+    listenersRecs = {}
+    finalListeners = finalset.groupby('listener_id').agg(lambda x: x.tolist()).to_dict()['song_id']
+    # in listener recs keep user from finalListeners
+    for user in finalListeners:
+        nl = {}
+        for song in testListeners[user]:
+            if song in song_reco:
+                # mn = 0
+                for s in song_reco[song]:
+                    nl[s] = song_reco[song][s]
+                    # mn += song_reco[song][s]
+                # nl[song] = mn/len(song_reco[song])
+            # else:
+            #     nl[song] = 5
+        # print(nl)
+        listenersRecs[user] = list(map(lambda x: x[0], sorted(nl.items(), key=lambda kv: kv[1], reverse=True)))
 
-    i = 1
-    # print("trackToSong length: ", len(trackToSong))
-    for song in userProfile:
-        if song not in listenersSongs:
-            add_song_to_map(song, filterSongs, (totalSongsLen - i) / float(totalSongsLen))
-        if song in songToTrack and songToTrack[song] in similars:
-            sims = similars[songToTrack[song]]
-            sims = sims.split(',')
-            listOdd = sims[1::2]
-            listEven = sims[::2]
-            sims = dict(zip(listEven, listOdd))
-            # key is similar song, value is decimal 0 -> 1 how similar is it
-            for key, value in sims.items():
-                if key in trackToSong and trackToSong[key] not in listenersSongs:
-                    add_song_to_map(trackToSong[key], filterSongs, (totalSongsLen - i/float(value)) / float(totalSongsLen))
-        i += 1
-
-    del userProfile[:]
-    for key, value in sorted(filterSongs.items(), key=lambda k: (k[1], k[0]), reverse=True):
-        userProfile.append(key)
-
-
-# adds song to map and sets its score to value
-def add_song_to_map(song, map, value):
-    if song in map:
-        map[song] = (map[song] + float(value))/2.0
-    else:
-        map[song] = float(value)
 
 def firstTenList(map):
     i = 0

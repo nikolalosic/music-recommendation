@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 
 
@@ -110,7 +109,7 @@ def ndcg_at_k(actual, predicted, k=10):
         r = []
         #if len(pred) > k:
         #    pred = pred[:k]
-        print('actual, predicted: ',len(act), len(pred))
+        # print('actual, predicted: ',len(act), len(pred))
         for a, p in zip(act, pred):
             #if a == p:
             #    r.append(3)
